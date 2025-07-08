@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberCalc Pro - Ultimate Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(45deg, #1a1a1a, #2d2d2d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .calculator {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 255, 200, 0.3);
+            border: 2px solid #00ffc8;
+            width: 400px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 240px;
+        }
+
+        .display {
+            background: #001f1a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: right;
+            font-size: 2.5em;
+            min-height: 100px;
+            word-wrap: break-word;
+            border: 2px solid #00ffc8;
+            text-shadow: 0 0 10px #00ffc8;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            padding: 20px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        button:hover {
+            background: rgba(0, 255, 200, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00ffc8;
+        }
+
+        .operator {
+            background: rgba(0, 255, 200, 0.2);
+        }
+
+        .equals {
+            background: #00ffc8;
+            color: #000;
+        }
+
+        .scientific {
+            grid-column: span 2;
+            background: rgba(255, 0, 200, 0.2);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #00ffc8;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .history-panel {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            width: 200px;
+            max-height: 150px;
+            overflow-y: auto;
+            border: 2px solid #00ffc8;
+            z-index: 1000;
+        }
+
+        #history-list {
+            font-size: 0.8em;
+        }
+
+        #history-list div {
+            margin: 5px 0;
+            padding: 3px;
+            border-bottom: 1px solid #00ffc855;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-panel h3 {
+            margin-bottom: 8px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">Cyber Theme</button>
+    
+    <div class="calculator">
+        <div class="display" id="display">0</div>
+        <div class="buttons">
+            <button class="scientific" onclick="addOperation('sin(')">sin</button>
+            <button class="scientific" onclick="addOperation('cos(')">cos</button>
+            <button class="scientific" onclick="addOperation('tan(')">tan</button>
+            <button class="scientific" onclick="addOperation('log(')">log</button>
+            <button class="operator" onclick="clearDisplay()">C</button>
+            <button class="operator" onclick="backspace()">⌫</button>
+            <button class="operator" onclick="addOperation('%')">%</button>
+            <button class="operator" onclick="addOperation('/')">/</button>
+            
+            <button onclick="addNumber(7)">7</button>
+            <button onclick="addNumber(8)">8</button>
+            <button onclick="addNumber(9)">9</button>
+            <button class="operator" onclick="addOperation('*')">×</button>
+            
+            <button onclick="addNumber(4)">4</button>
+            <button onclick="addNumber(5)">5</button>
+            <button onclick="addNumber(6)">6</button>
+            <button class="operator" onclick="addOperation('-')">-</button>
+            
+            <button onclick="addNumber(1)">1</button>
+            <button onclick="addNumber(2)">2</button>
+            <button onclick="addNumber(3)">3</button>
+            <button class="operator" onclick="addOperation('+')">+</button>
+            
+            <button onclick="addNumber(0)">0</button>
+            <button onclick="addOperation('.')">.</button>
+            <button class="scientific" onclick="addOperation('√(')">√</button>
+            <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <div class="history-panel" id="history">
+        <h3>History</h3>
+        <div id="history-list"></div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentTheme = 'dark';
+        let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+
+        function updateDisplay(value) {
+            display.textContent = value;
+        }
+
+        function addNumber(num) {
+            if(display.textContent === '0') {
+                updateDisplay(num);
+            } else {
+                updateDisplay(display.textContent + num);
+            }
+        }
+
+        function addOperation(op) {
+            updateDisplay(display.textContent + op);
+        }
+
+        function clearDisplay() {
+            updateDisplay('0');
+        }
+
+        function backspace() {
+            updateDisplay(display.textContent.slice(0, -1) || '0');
+        }
+
+        function calculate() {
+            try {
+                let expression = display.textContent
+                    .replace(/√/g, 'Math.sqrt')
+                    .replace(/sin/g, 'Math.sin')
+                    .replace(/cos/g, 'Math.cos')
+                    .replace(/tan/g, 'Math.tan')
+                    .replace(/log/g, 'Math.log10');
+
+                let result = eval(expression);
+                history.push(`${expression} = ${result}`);
+                localStorage.setItem('calcHistory', JSON.stringify(history));
+                updateDisplay(result);
+                updateHistory();
+            } catch (error) {
+                updateDisplay('Error');
+                setTimeout(clearDisplay, 1000);
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const calculator = document.querySelector('.calculator');
+            if(currentTheme === 'dark') {
+                body.style.background = 'linear-gradient(45deg, #f0f0f0, #ffffff)';
+                calculator.style.background = 'rgba(255, 255, 255, 0.9)';
+                calculator.style.boxShadow = '0 0 50px rgba(0, 150, 255, 0.3)';
+                calculator.style.borderColor = '#0096ff';
+                currentTheme = 'light';
+            } else {
+                body.style.background = 'linear-gradient(45deg, #1a1a1a, #2d2d2d)';
+                calculator.style.background = 'rgba(0, 0, 0, 0.8)';
+                calculator.style.boxShadow = '0 0 50px rgba(0, 255, 200, 0.3)';
+                calculator.style.borderColor = '#00ffc8';
+                currentTheme = 'dark';
+            }
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = history.reverse().map(entry => 
+                `<div>${entry}</div>`
+            ).join('');
+        }
+
+        updateHistory();
+    </script>
+</body>
+</html>
