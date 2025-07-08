@@ -33,4 +33,4 @@
 
 ## 🗃️ **  لينك التجربه/ ملفات المشروع**
 index.html
-[(https://wonderful-truffle-d246fe.netlify.app/)](https://wonderful-truffle-d246fe.netlify.app/)
+https://cyber-punk-calculo.netlify.app/
